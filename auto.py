@@ -33,27 +33,24 @@ def get_click_pos():
                 return i.x, i.y
 
 
-def at_people(name, pos_x, pos_y):
+def at_people(name, show=False, interval=0.5):
     # 复制姓名到剪切板
     pyperclip.copy(name)
-    time.sleep(1)
-
-    # 定位鼠标
-    pg.moveTo(pos_x, pos_y)
-    pg.click()
+    time.sleep(interval)
 
     # 输入@
-    pg.write('@', interval=0.2)
-    time.sleep(1)
+    pg.write('@', interval=interval)
+    time.sleep(interval)
 
     # 输入姓名
     pg.hotkey('ctrl', 'v')
-    time.sleep(1)
+    time.sleep(interval)
 
     # 选中此人
     pg.press('enter')
 
-    print(f"{name} at成功")
+    if show:
+        print(f"{name} at成功")
 
 
 def get_name_dict(username, password):
@@ -145,19 +142,31 @@ def get_name_dict(username, password):
 
 if __name__ == "__main__":
 
-    username = "2016010054"
-    password = "zhouying9146"
+    open_window_interval = 3  # 打开聊天窗口的时间
+    username = "username"
+    password = "password"
 
     student_dict = get_name_dict(username, password)
     for key, value in student_dict.items():
-        print(f"现在操作{key}年级的人,你有10s时间打开聊天窗口")
-        time.sleep(10)
+        print(f"现在操作 {password} 年级的人,你有 {open_window_interval}s 时间打开聊天窗口")
+        time.sleep(open_window_interval)
 
+        # 定位光标至聊天框
         print('请点击聊天框')
         pos_x, pos_y = get_click_pos()
+        pg.moveTo(pos_x, pos_y)
+        pg.click()
 
         for name in value:
-            at_people(name, pos_x, pos_y)
+            at_people(name, show=False)
 
         # 发送消息
-        pg.press('enter')
+        confim = input("是否确认发送?[y/N]: ").lower()
+        if confim in ['y', 'yes']:
+            pg.press('enter')
+        elif confim in ['n', 'no', '']:
+            print("结束运行")
+            break
+        else:
+            print("无效输入")
+            break
