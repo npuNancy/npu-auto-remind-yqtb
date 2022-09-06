@@ -1,12 +1,11 @@
-from cmath import log
 import re
 import time
 import pynput
-import datetime
 import requests
 import pyperclip
 import pyautogui as pg
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 
 def get_pos():
@@ -119,7 +118,7 @@ def get_name_dict(session, post_url, page_number):
         for tr in tbody.findAll('tr')[1:]:
             name = tr.find_all('td')[0].getText()  # 姓名
             std_id = tr.find_all('td')[1].getText()  # 学号
-            status = tr.find_all('td')[2].getText()  # 未上报 or 免上报
+            status = tr.find_all('td')[2].getText().strip()  # 未上报 or 免上报
 
             if status != "未上报":
                 continue
