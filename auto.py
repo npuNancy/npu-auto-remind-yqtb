@@ -81,14 +81,13 @@ def check_session(session):
     return session
 
 
-def login(login_data):
+def login(session, login_data):
     # 登录
     login_url = "https://uis.nwpu.edu.cn/cas/login"  # 翱翔门户登录url
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
         'Content-Type': 'application/x-www-form-urlencoded',
     }
-    session = requests.session()
     response = session.get(login_url, headers=headers)
     execution = re.findall(r'name="execution" value="(.*?)"', response.text)[0]
     login_data['execution'] = execution
@@ -131,6 +130,19 @@ def get_name_dict(session, post_url, page_number):
     return student_dict
 
 
+def get_mfaState(session, username, password):
+
+    header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.3s',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Referer': 'https://yqtb.nwpu.edu.cn/wx/ry/jrsb_xs.jsp',
+    }
+    url = f"https://uis.nwpu.edu.cn/cas/mfa/detect?username={username}&password={password}"
+    response = session.post(url, headers=header)
+
+    mfaState = response.json()["data"]["state"]
+    return mfaState
+
 def main(username, password):
     '''
     描述:
@@ -146,6 +158,7 @@ def main(username, password):
 
     post_url = "https://yqtb.nwpu.edu.cn/wx/ry/fktj_list.jsp?flag=wtbrs&gjc=&rq={}&bjbh=&PAGENUMBER={}&PAGEGROUP=0"
 
+    session = requests.session()
     login_data = {
         # 账号
         'username': username,
@@ -153,11 +166,12 @@ def main(username, password):
         'password': password,
         'currentMenu': '1',
         'execution': 'e1s1',
-        "_eventId": "submit"
+        "_eventId": "submit",
+        "mfaState": get_mfaState(session, username, password)
     }
 
     # 登录
-    session = login(login_data)
+    session = login(session, login_data)
     session = check_session(session)
 
     # 获取PageNumber
